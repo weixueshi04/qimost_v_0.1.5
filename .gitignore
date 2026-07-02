@@ -1,0 +1,38 @@
+# Course inputs and generated study artifacts
+**/00_inbox/
+**/01_extracted_text/
+**/02_analysis/
+**/03_exams/
+**/04_mistakes/
+**/05_recitation/
+**/06_final/
+**/logs/
+
+# Private course files
+*.ppt
+*.pptx
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.mp3
+*.m4a
+*.wav
+*.flac
+*.aac
+*.mp4
+*.mov
+*.jpg
+*.jpeg
+*.png
+*.heic
+
+# Local/editor noise
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+
+# Local drafting notes
+deepseek的重构意见.txt

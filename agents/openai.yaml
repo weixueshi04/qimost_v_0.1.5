@@ -1,0 +1,7 @@
+interface:
+  display_name: "Qimo Speedrun"
+  short_description: "Finals review with source checks and follow-ups"
+  default_prompt: "Use $qimo-speedrun to turn my course materials into a source-grounded finals review sprint. Ask before creating scheduled check-ins."
+
+policy:
+  allow_implicit_invocation: true
