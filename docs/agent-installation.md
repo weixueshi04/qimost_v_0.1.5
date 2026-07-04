@@ -55,12 +55,12 @@ Recommended invocation:
 Use qimo-speedrun. Start with capability check, source coverage, and current exam rules. Use Hermes scheduled tasks/message reminders when helpful, but ask me before creating them. Do not generate exams until high-priority teacher materials are accounted for.
 ```
 
-## Web Chat / Knowledge Base Products
+## Knowledge Base Products
 
-For ima, Kimi, Tongyi Tingwu, Gemini AI Studio, DeepSeek web, or similar products:
+For ima, Kimi, Tongyi Tingwu, or similar products:
 
-- Paste `SKILL.md` first.
-- Ask the model to enter Low-Tool / Web Chat Mode.
-- Upload or paste materials in batches.
-- Require a `STATE SNAPSHOT` at the end of every response.
+- Use them as retrieval, storage, or transcription helpers behind an installed agent.
+- Keep the installed agent responsible for state, source coverage, exams, correction incidents, and scheduled tasks.
 - Treat knowledge-base retrieval as secondary evidence unless the product shows exact original source documents, pages, slides, passages, or timestamps.
+
+Ordinary web AI without skill installation, file access, and persistent state is not a supported Qimo Speedrun target.

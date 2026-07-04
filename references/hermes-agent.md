@@ -19,6 +19,8 @@ Always propose a follow-up task when one of these happens:
 - Exam 1, Exam 2, or Exam 3 is generated.
 - A timed paper starts.
 - A mistake review is completed.
+- Original courseware review is due or completed.
+- The agent detects memorization difficulty, unclear framework, fatigue, low initiative, pace risk, or repeated stuck points.
 - A recitation pack or final sprint sheet is produced.
 - The user says they will study later, sleep, commute, eat, or leave the computer.
 
@@ -82,6 +84,7 @@ When the user replies to a message task:
 
 - Update `logs/session_state.json` with current phase and next action.
 - If the reply reveals confusion, update `02_analysis/weak_points.md`.
+- If the reply reveals memorization difficulty, unclear framework, fatigue, low initiative, or pace risk, run the Active Coaching Feedback Gate.
 - If the reply reports wrong answers, update `04_mistakes/mistake_log.md`.
 - If the reply challenges an answer or source, run the Correction Incident Gate.
 - If the task is complete, mark it complete in `logs/followup_tasks.md`.

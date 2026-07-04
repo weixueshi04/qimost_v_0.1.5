@@ -15,14 +15,11 @@ Codex, Claude Code, OpenCode, Hermes, and similar agents should use the full wor
 
 Prefer Hermes when scheduled tasks and message gateways are available. Load `references/hermes-agent.md` for those details.
 
-## Low-Tool Chat
+## Unsupported Web-Only Chat
 
-When an environment cannot inspect files or persist state, use Low-Tool / Web Chat Mode:
+Ordinary web-only AI without skill installation, file access, and persistent state is not a supported Qimo Speedrun target. Do not add workflow burden for that mode.
 
-- process material in batches,
-- keep visible coverage tables,
-- output `STATE SNAPSHOT`,
-- avoid claiming full reading.
+If the user only has a knowledge-base product, use it as a retrieval or transcription helper behind an installed/file-based agent.
 
 ## Knowledge Bases
 

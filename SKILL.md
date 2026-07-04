@@ -1,9 +1,9 @@
 ---
 name: qimo-speedrun
-description: Build a 10-12 hour university finals speedrun workflow from messy course materials. Use when a student needs an evidence-backed cram plan from PPTs, textbooks, review recordings/transcripts, homework, past exams, figures, and notes; the skill enforces source coverage, original-source verification, teacher-priority evidence, staged mock exams, mistake review, recitation, final sprint sheets, correction-incident review, and scheduled follow-up tasks. Designed first for Hermes-style agents with cron/message gateways, and also for Codex, Claude Code, OpenCode, and other file-based agents.
+description: Build a 10-12 hour university finals speedrun workflow from messy course materials. Use when a student needs an evidence-backed cram plan from PPTs, textbooks, review recordings/transcripts, homework, past exams, figures, and notes; the skill enforces source coverage, original-source verification, original courseware review, teacher-priority evidence, staged mock exams, active coaching, mistake review, recitation, final sprint sheets, correction-incident review, and scheduled follow-up tasks. Designed for installed/file-based agents such as Hermes, Codex, Claude Code, and OpenCode, especially Hermes-style agents with cron/message gateways.
 ---
 
-# Qimo Speedrun (v0.1.9)
+# Qimo Speedrun (v0.2.0)
 
 Use this skill to turn messy course materials into a compact, evidence-backed finals review path. The practical goal is 60+ as the floor and around 80 as the stretch target after 10-12 focused hours, assuming the materials contain enough exam signal.
 
@@ -13,7 +13,7 @@ When this skill is activated (loaded via `use_skill`), the assistant MUST immedi
 
 The guide must include:
 
-1. **Greeting + version**: State the skill name and version (e.g., "Qimo Speedrun v0.1.9 已激活").
+1. **Greeting + version**: State the skill name and version (e.g., "Qimo Speedrun v0.2.0 已激活").
 2. **What this skill does** (1-2 sentences): Turn your course materials into a structured 10-12 hour finals review path.
 3. **What the student needs to provide**: Course materials (PPT, textbook, recordings, homework, past exams, review notes) — can be unsorted, dumped into one folder or knowledge base.
 4. **The full workflow as a numbered checklist** the student can follow, in plain language:
@@ -72,6 +72,8 @@ Do NOT begin processing materials until the user confirms they want to start. Th
 ## Operational Hard Gates
 
 These gates are mandatory because agents and knowledge-base platforms can skip files, lose state, overfit old papers, or keep repeating the same answer mistakes.
+
+This skill is intended for installed or file-based agents. Do not add workflow burden for users who paste the skill into ordinary web AI without installation, file access, or persistent state. A Hermes message gateway is part of an installed agent workflow and is supported.
 
 ### Source Coverage Gate
 
@@ -134,6 +136,21 @@ Hard rules:
 - If only an extracted index, knowledge-base snippet, OCR fragment, or search result is available, label it as secondary evidence and do not treat it as verified original evidence.
 - If the original source cannot be accessed in the current platform, say `original source not verified`, give only a low-confidence explanation, and ask the user to provide the relevant slide/page/transcript before finalizing.
 
+### Original Courseware Review Gate
+
+Original courseware review is a required human calibration step, not optional decoration. The goal is to let the student audit the AI-generated map against the teacher's actual PPT/PDF/handout style, catch details that extraction or transcripts missed, and rebuild trust before deeper mock exams.
+
+Read `references/courseware-review.md` when planning or running this step.
+
+Hard rules:
+
+- Do not put the main full-PPT review at the very beginning. First build enough framework so the student has a map.
+- Do not postpone all courseware review until after Exam 3 unless the user explicitly chooses emergency mode.
+- After `knowledge_framework.md`, schedule a primary 60-80 minute guided courseware review before Exam 1 when time allows.
+- After Exam 1 review, schedule a 30-40 minute targeted courseware review against wrong questions, uncertain concepts, and suspicious AI explanations.
+- After Exam 3 or before the final sprint, schedule a 20-30 minute sweep for teacher-style details, tables, figures, examples, formula conditions, and final-sheet additions.
+- Produce or update `02_analysis/courseware_review.md` with omissions, teacher-style signals, source pages/slides, details to add to exams, and AI claims needing correction.
+
 ### State Machine Gate
 
 Maintain `logs/session_state.json` with at least:
@@ -141,13 +158,27 @@ Maintain `logs/session_state.json` with at least:
 ```json
 {
   "current_phase": "intake",
+  "current_step_label": "1/21 capability check",
   "completed_phases": [],
   "allowed_next_actions": ["finish_source_coverage", "collect_exam_rules"],
   "blocked_by": [],
+  "attention_points": [],
+  "user_action_needed": null,
   "exam_progress": {
     "exam1": {"paper_generated": false, "reviewed": false},
     "exam2": {"paper_generated": false, "reviewed": false},
     "exam3": {"paper_generated": false, "reviewed": false}
+  },
+  "courseware_review": {
+    "primary_after_framework": false,
+    "targeted_after_exam1": false,
+    "final_sweep": false
+  },
+  "coaching_signals": {
+    "memorization_difficulty": false,
+    "framework_unclear": false,
+    "fatigue_or_low_initiative": false,
+    "pace_risk": false
   },
   "active_user_question": null,
   "last_state_update": "ISO-8601 timestamp"
@@ -163,14 +194,17 @@ intake
 → exam_rules_lock
 → evidence_index
 → knowledge_framework
+→ primary_courseware_review
 → course_questions
 → homework_mapping
 → exam1_generated
 → exam1_reviewed
+→ targeted_courseware_review
 → exam2_generated
 → exam2_reviewed
 → recitation
 → exam3_generated
+→ final_courseware_sweep
 → final_sprint
 ```
 
@@ -181,7 +215,18 @@ Hard rules:
 - Do not generate Exam 3 until Exam 1 and Exam 2 mistakes/questions are summarized or explicitly unavailable.
 - Do not generate the final sprint until recitation inputs exist or the user requests emergency mode.
 - When the student interrupts with a conceptual question, answer it with source citations, log it to `02_analysis/weak_points.md` if it reveals confusion, then resume the saved `current_phase`.
-- At the start or end of every major response, show a one-line status: `Current phase: X | Done: ... | Next: ... | Blocked: ...`.
+- At the start or end of every major response, show a status block:
+
+```text
+Current step:
+Done:
+Attention:
+User action:
+Next:
+Blocked:
+```
+
+`Attention` must name the concrete risk or focus right now, such as unread S1 transcript, original courseware review due, Exam 1 mistake pattern, memorization fatigue, unclear framework, or pace risk.
 
 ### Hermes Agent / Scheduled Follow-up Gate
 
@@ -195,6 +240,22 @@ Hard rules:
 - Record accepted tasks in `logs/followup_tasks.md`.
 - Keep message reminders short: progress check, recall prompt, stuck-point collection, or next-action reminder.
 - When the user replies through QQ/WeChat/app messages, update `logs/session_state.json`, `02_analysis/weak_points.md`, `04_mistakes/mistake_log.md`, and `logs/followup_tasks.md` as appropriate.
+
+### Active Coaching Feedback Gate
+
+Many students will not diagnose their own learning problems. The agent must infer likely problems from feedback, pace, mistakes, silence, and repeated `stuck` signals, then offer concrete next actions.
+
+Read `references/active-coaching.md` when the student reports fatigue, low initiative, memorization difficulty, unclear framework, slow progress, repeated mistakes, or anxiety.
+
+Hard rules:
+
+- Do not wait for the user to name the problem. If the pattern is visible, state the likely learning bottleneck gently and propose one next action.
+- If concepts or recitation are hard to memorize, suggest low-friction movement recall: walk outside, pace in the hallway, or use voice recall while reviewing 3-5 items.
+- If the framework is unclear, pause new questions and rebuild a concept chain or relation map before continuing.
+- If the student keeps missing details, schedule or run targeted original courseware review.
+- If the student is tired or low-initiative, reduce the next task to a 5-15 minute action and propose a reminder rather than pushing a long artifact.
+- If pace risk appears, compress the plan and explicitly say what will be skipped, what is protected, and why.
+- Log inferred signals in `logs/session_state.json` and update `02_analysis/weak_points.md` or `05_recitation/recitation_pack.md` when useful.
 
 ### External Knowledge Base Gate
 
@@ -220,32 +281,6 @@ Hard rules:
 - Use incidents, weak points, and message replies to adapt the next drill, reminder, paper, or recitation item.
 - At the end of a course run, create `logs/post_run_retrospective.md` and `logs/skill_improvement_candidates.md`.
 - Do not edit the canonical skill itself during an active exam run unless the user explicitly requests a skill update.
-
-### Low-Tool / Web Chat Mode Gate
-
-If the platform is a web chat, knowledge-base chat, or app that cannot reliably inspect local files, write files, or persist state, switch to checkpoint mode instead of pretending to behave like a file-based agent.
-
-Required behavior:
-
-- Start by saying which capabilities are missing: file enumeration, full PPT/PDF parsing, audio transcription, image OCR, persistent state, or exact knowledge-base retrieval.
-- Ask the student to provide exported text, transcripts, screenshots, or batches of files in a readable form.
-- Process materials in named batches and keep a visible coverage table in the chat. Do not summarize "the course materials" globally until all batches are covered or skipped.
-- At the end of every response, output a compact `STATE SNAPSHOT` that the student can paste into the next message:
-
-```text
-STATE SNAPSHOT
-current_phase:
-completed_phases:
-unread_high_priority_sources:
-exam_rules:
-teacher_review_priorities:
-weak_points:
-next_allowed_actions:
-```
-
-- When using a knowledge-base product, list the exact documents/chunks/passages retrieved for each claim. If the system cannot expose retrieval evidence, say retrieval is unverifiable and lower confidence.
-- If the student asks an off-track question, answer it under `Side question`, then print `Returning to phase: ...` and continue from the saved snapshot.
-- Do not accept "I uploaded everything to the knowledge base" as proof of full reading. Full reading requires a coverage table with each source marked complete, partial, unreadable, or skipped.
 
 ## Quality Checks
 
@@ -423,13 +458,13 @@ Before processing course materials, list available and missing capabilities:
 
 | Material / Need | Capability to check | If missing |
 |---|---|---|
-| Homework photos or screenshots | image understanding, OCR, or vision plugin | Ask the user to install/enable OCR or vision tools, upload clearer images to a vision-capable chat, or transcribe the relevant questions. Mark unverified image content as unavailable. |
+| Homework photos or screenshots | image understanding, OCR, or vision plugin | Ask the user to install/enable OCR or vision tools, upload clearer images to a vision-capable agent, or transcribe the relevant questions. Mark unverified image content as unavailable. |
 | PDF textbooks or handouts | PDF text extraction or document parser | Ask the user to provide extracted text, copy key pages, export PDF to text, or install/enable a PDF/document tool. Do not infer unseen PDF content. |
 | PPT/PPTX slides | slide parser or document tool | Ask for exported PDF/images/text, or install/enable a document parser. |
 | DOCX notes | DOCX parser or document tool | Ask for pasted text/exported PDF, or install/enable a document parser. |
 | Review recordings or other audio | transcript or audio transcription tool | Ask for transcript, key timestamps, or install/enable transcription. Review recordings are S1 sources; do not treat raw audio as read, and do not let lower-tier sources replace them. |
 | Web exam conventions | web search/browser | Skip web-informed trends or ask the user to provide links/text. |
-| Persistent artifacts | filesystem write access | Present markdown in chat and tell the user where to save it. |
+| Persistent artifacts | filesystem write access | Treat this as blocked for official Qimo Speedrun. Ask the user to switch to an installed/file-based agent or explicitly accept a non-supported manual run. |
 
 If a capability is missing, offer the student four choices: install/enable the relevant tool, provide a text export/transcription, skip that source, or continue with lower confidence using only readable materials.
 
@@ -442,17 +477,20 @@ If a capability is missing, offer the student four choices: install/enable the r
 5. **Collect and lock exam info**: Ask only for missing high-impact details: course name, exam scope, question types/marks, duration, open/closed book, target score, available time, and whether Hermes-style timed reminders/message check-ins should be used. Save current rules to `logs/exam_rules.md`.
 6. **Build evidence index and priority map**: Scan all readable files, list usable and unreadable sources, note weak OCR/transcript quality, create `logs/evidence.md`, and create `logs/source_priority.md`. Extract teacher review-recording priorities before using past papers.
 7. **Extract framework**: Produce `02_analysis/knowledge_framework.md` as a teacher-style course walkthrough with the course's central question, concept chain, module explanations, source locations, A/B/C priority, confusing pairs, difficult points, likely question types, and must-memorize items. Do not output only a chapter tree or evidence index.
-8. **Extract and map figures**: For engineering or chart-heavy materials, create a figure inventory, chart/table descriptions, and figure-to-knowledge mappings before generating figure-based questions.
-9. **Map homework to knowledge**: If homework photos, screenshots, textbook exercises, or assigned after-class questions are readable or transcribed, create a full homework question bank, solve each question from course knowledge, and map each question to knowledge IDs, prerequisite concepts, style, difficulty, and variant potential.
-10. **Extract courseware questions**: Scan all PPT slides, lecture notes, and handouts for in-class practice questions (choice, case analysis, short-answer, calculation). Extract ALL questions into `02_analysis/course_questions.md` with a categorized anchor-linked index at the top, full question text, answers, detailed explanations, and source traces (file + slide/page). Group by knowledge area, not slide order. This step runs in parallel with or immediately after homework mapping, and before exam generation — the courseware questions are a primary input for Exam 1.
-11. **Coach understanding**: Let the student ask questions against the framework, homework solutions, courseware questions, figures, and materials. When answering, run the Original Source Verification Gate first: fetch the original slide/page/transcript/question when available, verify the stem/options/facts/rule, then explain. Identify the relevant subjects, objects, variables, actors, texts, events, mechanisms, or concepts and their relationships according to the discipline. If the question involves a special circumstance, boundary condition, exception, changed assumption, or unusual case fact, explicitly flag it and explain why the special treatment applies. Update unclear concepts in `02_analysis/weak_points.md`. Preserve `current_phase` while answering side questions.
-12. **Generate Exam 1**: Create a foundation paper aimed at passing level: broad coverage, mostly basic logic, answer key with teaching explanations, marking rubric, source trace, homework-style variants, and reproducible chart assets where useful. Must pass the Source Coverage Gate and Quality Checks first. If scheduled tasks are available, ask whether to start timing now or create a check-in at a specific time/channel.
-13. **Review Exam 1**: Grade or help self-grade, then update `04_mistakes/mistake_log.md` with wrong concept, error type, correction, and follow-up drill. If the review exposes an agent error, run the Correction Incident Gate before continuing.
-14. **Generate Exam 2**: Cover all S1 review-recording priorities together with Exam 1 gaps. Do not repeat Exam 1 questions; repeat important concepts through variants and deliberate practice, especially homework-derived concepts that overlap with review-recording emphasis. If scheduled tasks are available, propose a timed check and a post-paper review reminder.
-15. **Review Exam 2 and return to materials**: Resolve remaining confusion by quoting or paraphrasing course materials, then produce `05_recitation/recitation_pack.md`. Use weak points and correction incidents to adapt the recitation pack.
-16. **Run rolling recitation and sleep**: Use concentrated rolling recitation: first pass all A/B points, second pass only weak points, third pass closed-book recall. Preserve sleep, especially a 05:00-07:00 block if that is the student's plan. If scheduled tasks are available, propose short recall prompts and wake-up reminders through the approved message channel.
-17. **Morning retrieval and Exam 3**: Start with short recall, then generate Exam 3 using current exam rules, S1 review priorities, course materials, homework pattern analysis, figure pattern analysis, and prior mistakes/questions. Use past papers only as historical hints unless confirmed by S0/S1. Exam 3 should be comprehensive, diagnostic, and focused on reaching the stretch target.
-18. **Final pack**: Produce `06_final/final_sprint.md` as a self-contained last-page memory sheet with must-memorize formulas, confusing-point contrasts, exam-language answer templates, last-hour checklist, and exam strategy. Run the Quality Check Report before delivery. If the course run is ending, create a post-run retrospective and candidate skill improvements for user approval.
+8. **Primary original courseware review**: Guide the student through a 60-80 minute PPT/PDF/handout review after the framework and before Exam 1. Update `02_analysis/courseware_review.md` with missed details, teacher-style signals, framework corrections, and items to add to exams or the final sheet.
+9. **Extract and map figures**: For engineering or chart-heavy materials, create a figure inventory, chart/table descriptions, and figure-to-knowledge mappings before generating figure-based questions.
+10. **Map homework to knowledge**: If homework photos, screenshots, textbook exercises, or assigned after-class questions are readable or transcribed, create a full homework question bank, solve each question from course knowledge, and map each question to knowledge IDs, prerequisite concepts, style, difficulty, and variant potential.
+11. **Extract courseware questions**: Scan all PPT slides, lecture notes, and handouts for in-class practice questions (choice, case analysis, short-answer, calculation). Extract ALL questions into `02_analysis/course_questions.md` with a categorized anchor-linked index at the top, full question text, answers, detailed explanations, and source traces (file + slide/page). Group by knowledge area, not slide order. This step runs before exam generation — the courseware questions are a primary input for Exam 1.
+12. **Coach understanding**: Let the student ask questions against the framework, homework solutions, courseware questions, figures, original courseware, and materials. When answering, run the Original Source Verification Gate first. Also run the Active Coaching Feedback Gate when the student's feedback suggests memorization difficulty, unclear framework, fatigue, pace risk, or repeated `stuck` points.
+13. **Generate Exam 1**: Create a foundation paper aimed at passing level: broad coverage, mostly basic logic, answer key with teaching explanations, marking rubric, source trace, homework-style variants, and reproducible chart assets where useful. Must pass the Source Coverage Gate, Original Courseware Review Gate, and Quality Checks first. If scheduled tasks are available, ask whether to start timing now or create a check-in at a specific time/channel.
+14. **Review Exam 1 and targeted courseware review**: Grade or help self-grade, update `04_mistakes/mistake_log.md`, then run a 30-40 minute targeted courseware review against wrong questions, uncertain concepts, and suspicious AI explanations. If review exposes an agent error, run the Correction Incident Gate before continuing.
+15. **Generate Exam 2**: Cover all S1 review-recording priorities together with Exam 1 gaps. Do not repeat Exam 1 questions; repeat important concepts through variants and deliberate practice, especially homework-derived concepts that overlap with review-recording emphasis. If scheduled tasks are available, propose a timed check and a post-paper review reminder.
+16. **Review Exam 2 and return to materials**: Resolve remaining confusion by quoting or paraphrasing course materials, then produce `05_recitation/recitation_pack.md`. Use weak points and correction incidents to adapt the recitation pack. If memorization difficulty appears, suggest movement recall or voice recall rather than more passive reading.
+17. **Run rolling recitation and sleep**: Use concentrated rolling recitation: first pass all A/B points, second pass only weak points, third pass closed-book recall. Preserve sleep, especially a 05:00-07:00 block if that is the student's plan. If scheduled tasks are available, propose short recall prompts and wake-up reminders through the approved message channel.
+18. **Morning retrieval and Exam 3**: Start with short recall, then generate Exam 3 using current exam rules, S1 review priorities, course materials, homework pattern analysis, figure pattern analysis, and prior mistakes/questions. Use past papers only as historical hints unless confirmed by S0/S1. Exam 3 should be comprehensive, diagnostic, and focused on reaching the stretch target.
+19. **Final courseware sweep**: Run a 20-30 minute final original-courseware sweep for teacher-style details, formula conditions, tables, figures, examples, and likely objective-question details. Add only high-yield discoveries to the final sprint.
+20. **Final pack**: Produce `06_final/final_sprint.md` as a self-contained last-page memory sheet with must-memorize formulas, confusing-point contrasts, exam-language answer templates, last-hour checklist, and exam strategy. Run the Quality Check Report before delivery.
+21. **Post-run evolution**: If the course run is ending, create a post-run retrospective and candidate skill improvements for user approval.
 
 ## Time Budget
 
@@ -460,6 +498,7 @@ Default to a 10-12 hour path:
 
 - 0.5-1h: organize materials and collect exam info
 - 1.5-2h: knowledge framework, priorities, confusing points
+- 1.5-2h: original courseware review across primary review, targeted review, and final sweep
 - 1.5-2h: Exam 1 plus review
 - 2-2.5h: Exam 2 plus review
 - 1.5-2h: material re-check and rolling recitation
@@ -472,15 +511,19 @@ If the user has only 6-8 hours, skip full Exam 3 and produce a shorter mixed dia
 
 Every major output should include:
 
-- `Current phase`: one-line state summary from `logs/session_state.json`.
+- `Current step`: exact workflow step and phase from `logs/session_state.json`.
+- `Attention`: the current risk, bottleneck, or focus point the student should notice.
+- `User action`: the one action the student should take now.
 - `Purpose`: what this artifact is for.
 - `Inputs used`: source files and source locations. Use confidence only for unreadable or degraded sources; do not make confidence scoring the main artifact.
 - `Source coverage gate result`: complete / partial with user-approved skips / blocked, with the high-priority unread list if any.
 - `Source priority used`: S0-S6 evidence tiers used and any conflicts resolved.
 - `Original-source verification`: original slide/page/transcript/question checked, secondary-only, conflicting, or unavailable.
+- `Original courseware review`: not due / due now / completed primary / completed targeted / completed final sweep / skipped by user.
 - `Quality Check`: pass / partial / blocked, including what was revised before delivery.
 - `Correction/evolution status`: no incident / incident logged / artifact revised / next drill adapted.
 - `Follow-up task status`: not available / not needed / proposed / scheduled / completed.
+- `Active coaching`: no signal / memorization difficulty / unclear framework / fatigue-low initiative / pace risk / repeated stuck point, plus the next coaching move.
 - `Subject/entity map`: the key parties, objects, variables, actors, texts, events, mechanisms, or concepts and their relationships when the output explains or corrects something.
 - `Knowledge IDs covered`: IDs from the framework.
 - `Source evidence`: source references or "inference" labels.
@@ -534,6 +577,7 @@ course-folder/
   01_extracted_text/
   02_analysis/
     knowledge_framework.md
+    courseware_review.md
     course_questions.md    # courseware question bank with index
     weak_points.md
   03_exams/
@@ -564,10 +608,12 @@ Use `assets/course-workspace-template/` as a reference template if copying manua
 
 - Read `references/workflow.md` when planning or running the full 10-12 hour path.
 - Read `references/auto-intake.md` when the user provides one unsorted course folder or multiple course folders.
+- Read `references/courseware-review.md` when planning or running original PPT/PDF/handout review.
+- Read `references/active-coaching.md` when user feedback, progress, or silence suggests a learning bottleneck.
 - Read `references/chart-agent-protocol.md` for engineering/quantitative courses, chart-heavy PDFs/PPTs, or exam questions that require reading or generating figures.
 - Read `references/exam-rubric.md` before generating Exam 1, Exam 2, or Exam 3.
 - Read `references/output-templates.md` when creating files or maintaining cross-platform consistency.
 - Read `references/hermes-agent.md` when running inside Hermes Agent or any agent with cron, scheduled tasks, reminders, or QQ/WeChat/app message gateways.
 - Read `references/knowledge-base-platforms.md` when using Tencent ima, Kimi, Tongyi Tingwu, or another knowledge-base/transcription product.
 - Read `references/evolution-and-incident-review.md` when the user challenges an answer, an answer is corrected, a source conflict appears, or a course run is ending.
-- Read `references/platform-notes.md` when adapting this skill to Codex, Claude Code, OpenClaw, OpenWork, another file-based assistant, or a low-tool environment.
+- Read `references/platform-notes.md` when adapting this skill to Codex, Claude Code, OpenClaw, OpenWork, Hermes, or another installed/file-based assistant.

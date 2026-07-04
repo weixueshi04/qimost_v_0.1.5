@@ -6,14 +6,19 @@ Use this when creating course artifacts.
 
 ```markdown
 Current phase:
+Current step:
+Attention:
+User action:
 Purpose:
 Inputs used:
 Source coverage gate result:
 Source priority used:
 Original-source verification:
+Original courseware review:
 Quality Check:
 Correction/evolution status:
 Follow-up task status:
+Active coaching:
 Knowledge IDs covered:
 Source evidence:
 Next action:

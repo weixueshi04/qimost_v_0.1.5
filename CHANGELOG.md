@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0 - 2026-07-04
+
+- Added a required Original Courseware Review Gate with a 60-80 minute primary review after the framework, a 30-40 minute targeted review after Exam 1, and a 20-30 minute final sweep.
+- Added `references/courseware-review.md` for guided PPT/PDF/handout inspection and `02_analysis/courseware_review.md` output.
+- Added an Active Coaching Feedback Gate and `references/active-coaching.md` so agents infer memorization difficulty, unclear frameworks, fatigue, low initiative, pace risk, and repeated stuck points.
+- Expanded `logs/session_state.json` with current step labels, attention points, user action needed, courseware review status, and coaching signals.
+- Reworked the workflow from 18 to 21 steps so courseware review, targeted review, final sweep, and post-run evolution are explicit.
+- Removed support burden for ordinary web-only AI usage without skill installation, file access, and persistent state. Hermes message gateways remain supported as part of installed agent workflows.
+
 ## 0.1.9 - 2026-07-02
 
 - Added Hermes-first active coordination with scheduled follow-up tasks, cron/reminder prompts, and QQ/WeChat/app message-gateway guidance.

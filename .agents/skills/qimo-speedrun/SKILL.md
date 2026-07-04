@@ -1,6 +1,6 @@
 ---
 name: qimo-speedrun
-description: Repo-local entrypoint for Qimo Speedrun. Use when the student wants a source-grounded university finals sprint from messy course materials with source coverage, original-source verification, teacher-priority evidence, staged exams, correction-incident review, scheduled follow-ups, recitation, and final sprint planning.
+description: Repo-local entrypoint for Qimo Speedrun. Use when the student wants a source-grounded university finals sprint from messy course materials with source coverage, original-source verification, guided courseware review, active coaching, teacher-priority evidence, staged exams, correction-incident review, scheduled follow-ups, recitation, and final sprint planning.
 ---
 
 # Qimo Speedrun Repo Entrypoint

@@ -29,15 +29,15 @@ Use `vMAJOR.MINOR.PATCH` Git tags.
    Get-Content .\.opencode\skills\qimo-speedrun\SKILL.md
    ```
 
-5. Run one dry prompt in a file-based agent. For Hermes, also dry-run the scheduled follow-up prompt after generating a paper. Low-tool web chat mode is optional fallback validation.
+5. Run one dry prompt in a file-based agent. For Hermes, also dry-run the scheduled follow-up prompt after generating a paper. Verify original courseware review and active coaching prompts appear in the workflow.
 
 ## Suggested Git Commands
 
 ```powershell
 git init
 git add .
-git commit -m "Release qimo-speedrun v0.1.9"
-git tag v0.1.9
+git commit -m "Release qimo-speedrun v0.2.0"
+git tag v0.2.0
 git remote add origin https://github.com/<owner>/<repo>.git
 git push -u origin main --tags
 ```

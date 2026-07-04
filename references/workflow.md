@@ -10,13 +10,15 @@ Use this when running the complete 10-12 hour Qimo Speedrun path.
 4. Current exam rules lock.
 5. Evidence index and source priority map.
 6. Knowledge framework.
-7. Courseware question bank.
-8. Homework mapping.
-9. Exam 1 and review.
-10. Exam 2 and review.
-11. Recitation and sleep protection.
-12. Exam 3 and final sprint.
-13. Post-run retrospective.
+7. Primary original courseware review.
+8. Courseware question bank.
+9. Homework mapping.
+10. Exam 1 and targeted courseware review.
+11. Exam 2 and review.
+12. Recitation and sleep protection.
+13. Exam 3 and final courseware sweep.
+14. Final sprint.
+15. Post-run retrospective.
 
 Do not skip a phase unless the user explicitly accepts the risk.
 
@@ -25,7 +27,10 @@ Do not skip a phase unless the user explicitly accepts the risk.
 Each block should end with:
 
 - current phase,
+- current step,
 - artifact produced,
+- attention point,
+- user action needed,
 - weak points discovered,
 - next allowed action,
 - whether a follow-up task should be proposed.
