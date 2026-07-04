@@ -1,9 +1,9 @@
 ---
-name: university-finals-sprint
-description: Build a 10-12 hour university finals sprint workflow from messy course materials. Use when a student needs an evidence-backed cram plan from PPTs, textbooks, review recordings/transcripts, homework, past exams, figures, and notes; University Finals Sprint enforces source coverage, tool readiness and auto-install, original-source verification, original courseware review, teacher-priority evidence, staged mock exams, active coaching, mistake review, recitation, final sprint sheets, correction-incident review, and scheduled follow-up tasks. Designed for installed/file-based agents such as Hermes, Codex, Claude Code, and OpenCode, especially Hermes-style agents with cron/message gateways.
+name: finals-pilot
+description: Build a 10-12 hour university finals sprint workflow from messy course materials. Use when a student needs a source-checked cram plan from PPTs, textbooks, review recordings/transcripts, homework, past exams, figures, and notes; FinalsPilot enforces source coverage, tool readiness and auto-install, original-source verification, original courseware review, teacher-priority evidence, staged mock exams, active coaching, mistake review, recitation, final sprint sheets, correction-incident review, and scheduled follow-up tasks. Designed for installed/file-based agents such as Hermes, Codex, Claude Code, and OpenCode, especially Hermes-style agents with cron/message gateways.
 ---
 
-# University Finals Sprint (v0.2.1)
+# FinalsPilot (v0.2.1)
 
 Use this skill to turn messy course materials into a compact, evidence-backed finals review path. The practical goal is 60+ as the floor and around 80 as the stretch target after 10-12 focused hours, assuming the materials contain enough exam signal.
 
@@ -13,7 +13,7 @@ When this skill is activated (loaded via `use_skill`), the assistant MUST immedi
 
 The guide must include:
 
-1. **Greeting + version**: State the skill name and version (e.g., "University Finals Sprint v0.2.1 已激活").
+1. **Greeting + version**: State the skill name and version (e.g., "FinalsPilot v0.2.1 已激活").
 2. **What this skill does** (1-2 sentences): Turn your course materials into a structured 10-12 hour finals review path.
 3. **What the student needs to provide**: Course materials (PPT, textbook, recordings, homework, past exams, review notes) — can be unsorted, dumped into one folder or knowledge base.
 4. **The full workflow as a numbered checklist** the student can follow, in plain language:
@@ -49,7 +49,7 @@ Do NOT begin processing materials until the user confirms they want to start. Th
 - **Knowledge-base discipline (知识库只作检索，不作已读证明)**: When using Tencent ima, Kimi, Tongyi Tingwu, or any knowledge-base/transcription product, treat retrieval as secondary until the original source location is visible. Maintain batch manifests and retrieval receipts. Read `references/knowledge-base-platforms.md` before relying on a knowledge base for analysis or correction.
 - **Subject/entity relationship clarity (主体/对象/变量/关系不可模糊)**: For any user question about a concept, case, term, event, mechanism, formula, theorem, experiment, policy, literary text, or historical process, identify the relevant subjects/entities and their relationships before explaining. In law/management this means party-action-responsibility; in engineering/science it means object-variable-condition-mechanism; in economics/management it means actor-incentive-constraint-outcome; in humanities/social science it means person/institution/concept/event-cause-effect. The answer must move the student from vague confusion to a clear mental model.
 - **Special-case explicit treatment (特殊情况特殊解释)**: Many exam questions involve situations where a general rule, formula, model, theory, or historical pattern has an exception, boundary condition, special assumption, or modified application. When this happens, explicitly separate: (1) the general rule/model, (2) what is special in THIS question, (3) what the course material says about that specialness, (4) how the conclusion changes. Never apply a general rule to a special case without flagging the specialness.
-- **Discipline adaptation (按学科适配解释方式)**: University Finals Sprint is not limited to construction, contract management, law, or any single course. Determine the subject and exam style from the user's materials. For STEM and quantitative courses, prioritize definitions, variables, assumptions, formulas, diagrams, units, procedures, and calculation traps. For humanities and social sciences, prioritize actors, concepts, texts, institutions, causes, evidence, comparison, argument structure, and exam-language expression. Use the course's own style, not a fixed template from another subject.
+- **Discipline adaptation (按学科适配解释方式)**: FinalsPilot is not limited to construction, contract management, law, or any single course. Determine the subject and exam style from the user's materials. For STEM and quantitative courses, prioritize definitions, variables, assumptions, formulas, diagrams, units, procedures, and calculation traps. For humanities and social sciences, prioritize actors, concepts, texts, institutions, causes, evidence, comparison, argument structure, and exam-language expression. Use the course's own style, not a fixed template from another subject.
 - **Correction incidents create memory (答错必须留痕进化)**: When the user challenges an answer or a source mismatch appears, do not only apologize. Re-check the original source, classify the incident, correct affected artifacts, and write a prevention rule. Read `references/evolution-and-incident-review.md` for the required template.
 - **Autonomous evolution with user control (自主进化但不擅自改核心规则)**: Within a course run, adapt drills, reminders, difficulty, recitation, and mock exams from mistakes and replies. Across course runs, propose skill improvements in `logs/skill_improvement_candidates.md`. Do not modify the canonical skill during an active exam run unless the user explicitly asks.
 - Preserve source traceability. Assign every knowledge point an ID and cite source file/page/slide/timestamp/homework question when available.
@@ -503,7 +503,7 @@ Before processing course materials, list available and missing capabilities, the
 | Spreadsheets or tables | XLSX/CSV parser or spreadsheet tool | Tell the student table parsing is needed, then install/enable a spreadsheet parser if possible. If blocked, ask for CSV export or screenshots plus OCR. |
 | Archives | zip/7z extraction | Tell the student archive extraction is needed, then extract with available tools or install/enable an archive tool. If blocked, ask the student to unpack the archive. |
 | Web exam conventions | web search/browser | Use browser/search if available; if missing and the web signal matters, request the needed tool or ask the user to provide links/text. |
-| Persistent artifacts | filesystem write access | Treat this as blocked for official University Finals Sprint. Ask the user to switch to an installed/file-based agent or explicitly accept a non-supported manual run. |
+| Persistent artifacts | filesystem write access | Treat this as blocked for official FinalsPilot. Ask the user to switch to an installed/file-based agent or explicitly accept a non-supported manual run. |
 
 If a capability is missing and installable, the default action is: explain why it is needed, install/enable it, smoke-test it, and continue. Only fall back to text export/transcription, skip, or lower-confidence continuation when installation is unavailable, unsafe, denied, or fails.
 

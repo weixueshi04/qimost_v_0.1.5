@@ -6,7 +6,7 @@
 - Added a Tool Readiness and Auto-Install Gate so agents must explain missing document/OCR/transcription capabilities, install or enable tools when permitted, smoke-test extraction, and log remaining unreadable sources.
 - Added `references/tool-readiness.md` with preferred reading capabilities and fallbacks for PDF, PPT/PPTX, DOCX, homework photos, audio/video recordings, spreadsheets, archives, web pages, and local folders.
 - Updated the Capability Check, Quick Workflow, output standards, and workspace logs to include tool readiness and install results.
-- Renamed the primary skill to `university-finals-sprint` and removed older alias wrappers.
+- Renamed the primary skill to `finals-pilot` / FinalsPilot and removed older alias wrappers.
 - Rewrote `README.md` as a normal Chinese GitHub project page and added `README.en.md` for English readers.
 - Added explicit author/maintainer-rights notice and removed draft-style license suggestions from the README.
 

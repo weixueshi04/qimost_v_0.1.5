@@ -1,6 +1,6 @@
 # Tool Readiness and Auto-Install
 
-Use this reference when University Finals Sprint receives files that the current agent cannot confidently read yet.
+Use this reference when FinalsPilot receives files that the current agent cannot confidently read yet.
 
 ## Principle
 

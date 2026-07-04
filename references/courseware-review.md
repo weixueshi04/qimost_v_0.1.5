@@ -1,6 +1,6 @@
 # Original Courseware Review
 
-Use this when the student needs to browse original PPT/PDF/handout files during University Finals Sprint.
+Use this when the student needs to browse original PPT/PDF/handout files during FinalsPilot.
 
 ## Purpose
 

@@ -1,6 +1,6 @@
 # Full Workflow Reference
 
-Use this when running the complete 10-12 hour University Finals Sprint path.
+Use this when running the complete 10-12 hour FinalsPilot path.
 
 ## Phase Order
 

@@ -45,7 +45,7 @@ After logging:
 
 ## Autonomous Evolution Levels
 
-University Finals Sprint should evolve at three levels.
+FinalsPilot should evolve at three levels.
 
 ### Level 1: Within The Current Study Block
 

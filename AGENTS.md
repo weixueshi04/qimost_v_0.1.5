@@ -1,6 +1,6 @@
 # Repository Agent Guide
 
-This repository maintains the `university-finals-sprint` Agent Skill. Treat `SKILL.md` as the canonical source.
+This repository maintains the `finals-pilot` Agent Skill. Treat `SKILL.md` as the canonical source.
 
 ## Editing Rules
 
@@ -22,4 +22,4 @@ This repository maintains the `university-finals-sprint` Agent Skill. Treat `SKI
 
 - Decide license before public release.
 - Tag releases as `vX.Y.Z`.
-- Test at least one file-based agent and one repo-local wrapper/legacy alias path before recommending a release.
+- Test at least one file-based agent and one repo-local wrapper path before recommending a release.

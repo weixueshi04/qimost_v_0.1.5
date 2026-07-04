@@ -1,6 +1,6 @@
 # Notice
 
-University Finals Sprint is created and maintained by weixueshi04.
+FinalsPilot is created and maintained by weixueshi04.
 
 Copyright (c) 2026 weixueshi04.
 
