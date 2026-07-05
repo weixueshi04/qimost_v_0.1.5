@@ -1,0 +1,204 @@
+---
+name: chaoxing-materials
+description: Download accessible course materials from Chaoxing/Learning通 for FinalsPilot or other study workflows. Use when a student has courseware inside 学习通/超星章节学习, especially when PPT/PDF files are embedded in chapter pages without a visible download button; supports browser login reuse, course and chapter navigation, objectid/status resolution, PDF/source-file download, output-folder naming, and manifest generation.
+---
+
+# Chaoxing Materials
+
+Use this skill to help a student download course materials that are accessible in their own Chaoxing/Learning通 account.
+
+## When To Use
+
+Use this skill before FinalsPilot source coverage when:
+
+- Courseware is inside Chaoxing/Learning通 chapter pages.
+- PPT/PDF/DOC resources are embedded in the chapter view without a visible download button.
+- The student wants a local folder that an installed agent can read reliably.
+- FinalsPilot needs a manifest to know which courseware files exist, which files were downloaded, and which files failed.
+
+Do not use it when the student already has a complete local folder of course materials, unless they want to fetch additional Chaoxing resources.
+
+## Boundaries
+
+- Only work with materials the student can access through their own logged-in course page.
+- Do not ask for passwords. Open the browser and let the student log in manually when needed.
+- Reuse the local browser profile at `automation/chaoxing/browser-profile` when available.
+- Do not bypass access controls, paywalls, CAPTCHA, school SSO restrictions, or account security prompts.
+- Do not commit downloaded course materials, login profiles, extracted text, or generated course artifacts.
+
+## Format Policy
+
+Default to `pdf` for PPT/PPTX/DOC/DOCX/XLS/XLSX resources:
+
+- PDF is the default AI-reading copy. It usually gives GPT/Claude-style agents stable page references, visual layout, and text extraction while saving space.
+- Do not download source PPT/PPTX/DOCX/XLSX by default. Use `--mode source` only when the teacher's original file matters, the PDF is broken, or the student explicitly wants original files.
+- Do not download video/audio by default. Use `--mode media` only when the student explicitly wants recordings, or when the course has no document material and the video/audio is needed for review.
+- Use `--mode all` only when the student explicitly wants every accessible resource and accepts the storage/time cost.
+- If the downloaded PDF is incomplete, visually broken, or missing important notes/animations, rerun with `--mode source` and ask the agent to extract/convert the source file with document tools.
+
+## Required Student Setup
+
+Before downloading, tell the student to create one course-material folder outside the Git repository. Use a generic placeholder in public instructions and ask the student to provide their own local path during an actual run:
+
+```text
+<course-materials-folder>
+```
+
+Use that folder as the `--output` path or `CHAOXING_OUTPUT_DIR`.
+
+Recommended folder layout:
+
+```text
+course-materials/
+  01_pdf_for_ai/
+  02_source_files/      # optional
+  03_video_audio/       # optional
+  manifest/
+```
+
+Naming and privacy rules:
+
+- Preserve meaningful Chaoxing file names when available, but do not write real student course names, local paths, or downloaded file names into the skill documentation.
+- In public examples, use placeholders such as `<original-courseware-name>.pptx` and `<original-courseware-name>.pdf`.
+- For PDF conversions, keep the same base name and use `.pdf`.
+- If files collide, append `(2)`, `(3)`, etc. Do not overwrite silently.
+- Keep `materials-manifest.json` and `materials-manifest.md` so FinalsPilot can trace each file by relative path, objectid, download mode, and bytes.
+- Do not write absolute local paths, signed download URLs, real course names, or account identifiers into public docs or reusable skill examples.
+- Treat manifests, downloaded files, login profiles, and temporary output folders as private runtime artifacts. They belong in ignored local folders, not in the public repository.
+
+## Output Contract
+
+A successful run creates or updates this folder layout:
+
+```text
+<course-materials-folder>/
+  01_pdf_for_ai/
+  02_source_files/      # optional, only when source mode is used
+  03_video_audio/       # optional, only when media mode is used
+  manifest/
+    materials-manifest.md
+    materials-manifest.json
+```
+
+Manifest privacy rules:
+
+- Record relative paths, not absolute local paths.
+- Do not record signed download URLs, cookies, tokens, account identifiers, or school SSO details.
+- Keep enough metadata for FinalsPilot to trace coverage: filename, type/mode, objectid when available, bytes, relative path, and download timestamp.
+- If a file fails, record the failure in the user-facing summary and ask FinalsPilot to mark the item as unreadable or partial.
+
+## Workflow
+
+1. Confirm the student has created or approved an output folder.
+2. Install local automation dependencies if missing:
+
+   ```powershell
+   npm.cmd install
+   ```
+
+3. Open or refresh the login session:
+
+   ```powershell
+   npm.cmd run chaoxing:login
+   ```
+
+4. Scan course list:
+
+   ```powershell
+   npm.cmd run chaoxing:courses
+   ```
+
+5. Open the target course and chapter:
+
+   ```powershell
+   npm.cmd run chaoxing:open-section -- <课程关键词> <章节关键词>
+   ```
+
+6. Probe the page when the resource structure is unknown:
+
+   ```powershell
+   npm.cmd run chaoxing:probe-assets
+   ```
+
+7. Download the current chapter document:
+
+   ```powershell
+   npm.cmd run chaoxing:download-current -- --output "<course-materials-folder>"
+   ```
+
+   This defaults to PDF-only. Use `npm.cmd run chaoxing:download-source` for source files, `npm.cmd run chaoxing:download-media` for video/audio, and `npm.cmd run chaoxing:download-all` only when the student explicitly wants everything.
+
+8. Verify each downloaded file:
+
+   - Check file size is nonzero.
+   - For PDF, verify the first bytes start with `%PDF`.
+   - For PPTX/DOCX/XLSX, verify the first bytes start with `PK`.
+   - If the file is HTML, JSON, or an error page, do not mark it complete.
+
+9. Summarize the result:
+
+   ```text
+   Downloaded:
+   - PDF files: <count>
+   - Source files: <count or skipped>
+   - Media files: <count or skipped>
+   - Manifest: <course-materials-folder>/manifest/materials-manifest.md
+   Failed or partial:
+   - <resource or none>
+   Next:
+   - Hand this folder to FinalsPilot and seed source coverage from the manifest.
+   ```
+
+10. Hand off the output folder and manifest to FinalsPilot as course materials.
+
+## Implementation Notes
+
+- The robust route is not the visible Chaoxing download button.
+- First locate resource iframes inside `.ans-attach-ct` or the knowledge-card frame.
+- Extract `objectid` from iframe attributes or URLs.
+- Resolve resource metadata through:
+
+  ```text
+  https://mooc1.chaoxing.com/ananas/status/<objectid>?flag=normal
+  ```
+
+- Use returned fields:
+
+  | Field | Meaning |
+  |---|---|
+  | `filename` | Original meaningful file name |
+  | `download` | Original source-file download when available |
+  | `pdf` | Chaoxing PDF conversion for document/courseware |
+  | `http` | Media stream or readable resource URL |
+  | `length` | Expected resource size |
+  | `pagenum` | Document page count when available |
+
+## FinalsPilot Handoff
+
+After download, tell FinalsPilot:
+
+```text
+Use this folder as course material input: <CHAOXING_OUTPUT_DIR>
+Use manifest/materials-manifest.md/json as the source coverage seed.
+Treat 01_pdf_for_ai/ as the default AI-reading input. Treat 02_source_files/ and 03_video_audio/ as optional evidence only when present.
+```
+
+If a high-priority teacher review file or chapter resource fails to download, record it as unreadable/partial in FinalsPilot `logs/source_coverage.md` instead of pretending it was read.
+
+Recommended FinalsPilot source-coverage mapping:
+
+| Chaoxing output | FinalsPilot meaning |
+|---|---|
+| `manifest/materials-manifest.json` | First source list and coverage seed |
+| `01_pdf_for_ai/` | Default readable courseware input |
+| `02_source_files/` | Optional original-file evidence when PDFs are incomplete |
+| `03_video_audio/` | Optional recording/media evidence; requires transcription before S1/S2 use |
+| Failed downloads | `unreadable` or `partial`, with user action needed |
+
+## Failure Handling
+
+- If login is expired, rerun `npm.cmd run chaoxing:login` and let the student authenticate manually.
+- If course or chapter search returns the wrong page, ask for narrower course/chapter keywords.
+- If no resource objectid is found, run `npm.cmd run chaoxing:probe-assets` and inspect iframe/card metadata before guessing.
+- If the PDF conversion is missing or broken, use `--mode source` for the original file, then let FinalsPilot's document tools convert or read it.
+- If the resource is video/audio and the student needs it for review, use `--mode media`; FinalsPilot must still transcribe it before treating it as teacher evidence.

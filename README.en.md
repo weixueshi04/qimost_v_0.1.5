@@ -6,6 +6,8 @@ An Agent Skill that turns messy course materials into a 10-12 hour finals sprint
 
 FinalsPilot is built for university finals review. It asks the agent to verify what it can actually read, then uses teacher review notes, recordings, slides, homework, past papers, and personal notes to create an executable study route: build the framework, review original courseware, generate mock exams, review mistakes, organize recitation, and compress the course into a final sprint sheet.
 
+The repo also includes the companion `chaoxing-materials` skill for downloading accessible Chaoxing/Learning通 chapter materials into a local folder before handing them to FinalsPilot. It defaults to AI-readable PDFs; source files, video, and audio are opt-in.
+
 This is not a generic course summarizer. FinalsPilot turns the agent into a finals coordinator: it tracks the current phase, checks unread materials, separates current teacher priorities from older materials, and forces review when answers are wrong, workflow state is lost, or output quality is not good enough.
 
 ## Core Features
@@ -87,6 +89,42 @@ Use $finals-pilot in Hermes mode.
 I have 12 hours to review and want to aim as high as possible. After each study block, ask whether I want to start timing now or receive a progress check through the message gateway at a specific time.
 ```
 
+## Chaoxing / Learning通 Materials
+
+If the courseware is still inside Chaoxing/Learning通 chapter pages, use the companion skill first:
+
+```text
+Use $chaoxing-materials.
+Open my Chaoxing course, go to the target course and chapter, download accessible courseware into my chosen folder, default to PDF, and generate a manifest.
+```
+
+First-time setup:
+
+```powershell
+npm.cmd install
+```
+
+Common commands:
+
+```powershell
+npm.cmd run chaoxing:login
+npm.cmd run chaoxing:courses
+npm.cmd run chaoxing:open-section -- <course keyword> <chapter keyword>
+npm.cmd run chaoxing:download-current -- --output "<course-materials-folder>"
+```
+
+Default output:
+
+```text
+<course-materials-folder>/
+  01_pdf_for_ai/
+  manifest/
+    materials-manifest.md
+    materials-manifest.json
+```
+
+`FinalsPilot` treats `manifest/materials-manifest.json` as the source-coverage seed and `01_pdf_for_ai/` as the default readable courseware input. Source files, video, and audio are not downloaded by default. Use `chaoxing:download-source`, `chaoxing:download-media`, or `chaoxing:download-all` only when the PDF is incomplete, the original file matters, or the student explicitly needs recordings/media.
+
 ## Design Principles
 
 FinalsPilot comes from real finals-week use. Earlier versions produced 80+ and 90+ course results, while also exposing common failure modes in AI-assisted review: skipped materials, copied secondary answers, lost workflow state after side questions, over-weighting past papers, and corrections that did not create durable prevention rules.
@@ -112,13 +150,18 @@ The skill is built around these principles:
 ├── AGENTS.md
 ├── agents/openai.yaml
 ├── .agents/skills/finals-pilot/
+├── .agents/skills/chaoxing-materials/
 ├── .claude/skills/finals-pilot/
+├── .claude/skills/chaoxing-materials/
 ├── .opencode/skills/finals-pilot/
+├── .opencode/skills/chaoxing-materials/
+├── skills/chaoxing-materials/
+├── tools/chaoxing/
 ├── docs/
 └── references/
 ```
 
-Root [SKILL.md](SKILL.md) is the only canonical skill body. Files under `.agents/`, `.claude/`, and `.opencode/` are repo-local wrappers.
+Root [SKILL.md](SKILL.md) is the canonical FinalsPilot skill body. `skills/chaoxing-materials/SKILL.md` is the canonical companion skill for Chaoxing/Learning通 downloads. Files under `.agents/`, `.claude/`, and `.opencode/` are repo-local wrappers.
 
 ## Privacy
 

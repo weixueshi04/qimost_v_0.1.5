@@ -76,3 +76,40 @@ FinalsPilot expects the active agent to read real course materials, not just fil
 - spreadsheet and archive parsing
 
 If tool installation is blocked, the agent should ask for exported text, transcripts, clearer images, unpacked archives, an explicit skip, or permission to continue at lower confidence. See `references/tool-readiness.md`.
+
+## Companion Skill: Chaoxing Materials
+
+This repository also includes `chaoxing-materials`, a companion skill for downloading accessible 学习通/超星 chapter resources before FinalsPilot starts source coverage.
+
+Supported wrappers:
+
+- Codex / Agents: `.agents/skills/chaoxing-materials/SKILL.md`
+- Claude Code: `.claude/skills/chaoxing-materials/SKILL.md`
+- OpenCode: `.opencode/skills/chaoxing-materials/SKILL.md`
+- Hermes Agent: use the canonical `skills/chaoxing-materials/SKILL.md` or point Hermes to the repo-local wrapper, depending on its skill loader.
+
+Use it when a student says courseware is inside 学习通 and chapter PPT/PDF files do not have an obvious download button. It reuses browser login state, resolves Chaoxing `objectid` resources through the status endpoint, downloads PDF files by default into a user-approved folder, and creates a manifest for FinalsPilot. Source files and video/audio downloads remain available as explicit opt-in modes.
+
+First-time local setup:
+
+```powershell
+npm.cmd install
+```
+
+Typical flow:
+
+```powershell
+npm.cmd run chaoxing:login
+npm.cmd run chaoxing:courses
+npm.cmd run chaoxing:open-section -- <course keyword> <chapter keyword>
+npm.cmd run chaoxing:download-current -- --output "<course-materials-folder>"
+```
+
+The output folder should live outside the Git repository. By default the downloader writes AI-readable PDFs into `01_pdf_for_ai/` and writes `manifest/materials-manifest.md/json`. The manifest uses relative paths and does not store absolute local paths, signed download URLs, cookies, or account identifiers.
+
+After that, start FinalsPilot with the downloaded folder:
+
+```text
+Use $finals-pilot.
+Use <course-materials-folder> as my course material input. Seed source coverage from manifest/materials-manifest.json and treat 01_pdf_for_ai/ as the default courseware input.
+```

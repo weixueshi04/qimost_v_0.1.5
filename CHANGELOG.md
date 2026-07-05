@@ -2,6 +2,11 @@
 
 ## 0.2.1 - 2026-07-04
 
+- Added the companion `chaoxing-materials` skill for downloading accessible Chaoxing/Learning通 chapter resources through browser login reuse, `objectid` status resolution, PDF-first download defaults, optional source/media download modes, output-folder naming, and manifest generation.
+- Added local Chaoxing automation scripts and npm commands for login, course scanning, section opening, asset probing, and current-section downloads.
+- Updated FinalsPilot intake guidance so Chaoxing materials are downloaded into a user-approved folder, organized by `01_pdf_for_ai/`, optional source/media folders, and traced through `manifest/materials-manifest.md/json` before source coverage.
+- Removed private course/path examples from Chaoxing public docs and changed generated manifests to record relative paths instead of absolute local paths or signed source URLs.
+- Expanded README and installation docs with the Chaoxing-to-FinalsPilot handoff flow, default PDF-only usage, npm commands, output layout, and privacy rules.
 - Added `LICENSE` with CC BY-NC-SA 4.0 licensing and updated README/NOTICE license statements.
 - Added a Tool Readiness and Auto-Install Gate so agents must explain missing document/OCR/transcription capabilities, install or enable tools when permitted, smoke-test extraction, and log remaining unreadable sources.
 - Added `references/tool-readiness.md` with preferred reading capabilities and fallbacks for PDF, PPT/PPTX, DOCX, homework photos, audio/video recordings, spreadsheets, archives, web pages, and local folders.

@@ -1,0 +1,20 @@
+{
+  "name": "finals-pilot",
+  "version": "0.2.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "chaoxing:login": "node tools/chaoxing/open-login.mjs",
+    "chaoxing:courses": "node tools/chaoxing/list-courses.mjs",
+    "chaoxing:open-section": "node tools/chaoxing/open-section.mjs",
+    "chaoxing:probe-assets": "node tools/chaoxing/probe-section-assets.mjs",
+    "chaoxing:download-current": "node tools/chaoxing/download-current-pdf.mjs",
+    "chaoxing:download-pdf": "node tools/chaoxing/download-current-pdf.mjs --mode pdf",
+    "chaoxing:download-source": "node tools/chaoxing/download-current-pdf.mjs --mode source",
+    "chaoxing:download-media": "node tools/chaoxing/download-current-pdf.mjs --mode media",
+    "chaoxing:download-all": "node tools/chaoxing/download-current-pdf.mjs --mode all"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.55.0"
+  }
+}

@@ -1,0 +1,3 @@
+display_name: "Chaoxing Materials"
+short_description: "Download accessible 学习通 course materials"
+default_prompt: "Use $chaoxing-materials to open my Chaoxing course, download accessible chapter materials into a folder I choose, and create a manifest for FinalsPilot."

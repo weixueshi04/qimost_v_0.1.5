@@ -1,6 +1,6 @@
 ---
 name: finals-pilot
-description: Build a 10-12 hour university finals sprint workflow from messy course materials. Use when a student needs a source-checked cram plan from PPTs, textbooks, review recordings/transcripts, homework, past exams, figures, and notes; FinalsPilot enforces source coverage, tool readiness and auto-install, original-source verification, original courseware review, teacher-priority evidence, staged mock exams, active coaching, mistake review, recitation, final sprint sheets, correction-incident review, and scheduled follow-up tasks. Designed for installed/file-based agents such as Hermes, Codex, Claude Code, and OpenCode, especially Hermes-style agents with cron/message gateways.
+description: Build a 10-12 hour finals sprint workflow from messy course materials. Use when a student needs a source-checked cram plan from PPTs, PDFs, textbooks, review recordings/transcripts, homework, past exams, figures, Chaoxing/Learning通 downloads, and notes; FinalsPilot enforces source coverage, tool readiness and auto-install, original-source verification, original courseware review, teacher-priority evidence, staged mock exams, active coaching, mistake review, recitation, final sprint sheets, correction-incident review, and scheduled follow-up tasks. Designed for installed/file-based agents such as Hermes, Codex, Claude Code, and OpenCode, especially Hermes-style agents with cron/message gateways.
 ---
 
 # FinalsPilot (v0.2.1)
@@ -16,11 +16,12 @@ The guide must include:
 1. **Greeting + version**: State the skill name and version (e.g., "FinalsPilot v0.2.1 已激活").
 2. **What this skill does** (1-2 sentences): Turn your course materials into a structured 10-12 hour finals review path.
 3. **What the student needs to provide**: Course materials (PPT, textbook, recordings, homework, past exams, review notes) — can be unsorted, dumped into one folder or knowledge base.
+   If the materials are still inside Chaoxing/Learning通, tell the student that the companion `chaoxing-materials` skill can download accessible chapter courseware into a local folder before FinalsPilot starts source coverage.
 4. **The full workflow as a numbered checklist** the student can follow, in plain language:
 
    | Step | What happens | What you do | Estimated time |
    |------|-------------|-------------|----------------|
-   | 1 | Material intake & classification | Upload or point to your course materials | 0.5h |
+   | 1 | Material intake & classification | Upload materials, point to a folder, or use `chaoxing-materials` first for Learning通/Chaoxing courseware | 0.5h |
    | 2 | Knowledge framework | Review the framework, ask questions | 1.5-2h |
    | 3 | Courseware question bank | Browse indexed Q&A, self-test | 1h |
    | 4 | Homework mapping (if applicable) | Review homework solutions & mappings | 0.5h |
@@ -63,6 +64,8 @@ Do NOT begin processing materials until the user confirms they want to start. Th
 - If the student is sleep-deprived, protect the memory window: include a sleep block and a small morning retrieval review rather than endless new content.
 - Run the Tool Readiness and Auto-Install Gate before reading materials. Identify which file types require PDF/PPT/DOCX/OCR/audio/web/filesystem tooling, tell the student what needs to be installed or enabled and why, then install or enable the missing tools automatically when the current agent/platform permits it. If approval, network, package manager, or sandbox limits block installation, request the minimum required permission once; if installation still cannot happen, mark the source unreadable and use the fallback path. Never claim to have read a source that the available tools cannot access.
 - Support Auto Intake: if the user drops all materials for a course into one folder, classify and route files automatically before analysis. Do not require the student to manually sort files.
+- Support Chaoxing/Learning通 material intake through the companion `chaoxing-materials` skill when available. Ask the student to choose a local output folder, download accessible chapter/courseware PDFs there by default, and use `manifest/materials-manifest.md/json` as the first source coverage seed. Source files, video, and audio are optional downloads, not defaults. Do not treat a Chaoxing chapter as read until the downloaded file or manifest evidence exists.
+- Optimize material organization from Chaoxing manifests. If a downloaded folder contains `manifest/materials-manifest.json`, initialize source coverage from that manifest first: treat `01_pdf_for_ai/` as the primary AI-reading copy, `02_source_files/` as optional original-courseware evidence, `03_video_audio/` as optional recording evidence, and manifest fields such as relative path, objectid, mode, bytes, and download timestamp as traceability metadata. Do not re-ask the student to manually classify manifest-covered files unless a high-priority item failed, a filename is ambiguous, or the manifest conflicts with visible materials.
 - Support Chart Agent Protocol for engineering and quantitative courses: extract chart/table/diagram evidence, map figures to knowledge points, and generate reproducible chart assets for exam questions when tools allow.
 - Extract courseware example questions: When PPT slides, lecture notes, or other courseware contain in-class practice questions (choice, short-answer, case analysis, calculation), extract ALL of them into a dedicated question bank. Do not cherry-pick; completeness is the point. Each question must include the full stem, all options, the correct answer, a detailed explanation, and a source trace (file name + slide/section/page number).
 - Build a navigable question index: The question bank file must open with a categorized index table. Each entry has a short keyword and an anchor link (`[→](#anchor)`) that jumps to the full question. Categories should follow the course's knowledge structure, not slide order. The index is the student's entry point — it must be scannable in under 30 seconds.
@@ -511,7 +514,7 @@ If a capability is missing and installable, the default action is: explain why i
 
 1. **Check capabilities and install tools**: Identify which files can actually be read in the current platform and which require OCR, document parsing, transcription, web, archive, spreadsheet, or file-write tools. Create `logs/tool_readiness.md`, explain missing tools to the student, install/enable what the agent can safely install, smoke-test representative files, then start `logs/session_state.json`.
 2. **Initialize workspace**: If no organized course folder exists, run `scripts/init_qimo_workspace.py <target-folder>` or create the same structure manually. Accept raw unsorted course materials in `00_inbox/`.
-3. **Auto intake materials**: Classify files into PPT, textbook/reference, recordings/transcripts, homework, review重点, past exams, charts/tables/figures, and other. Assign priority tier S0-S6 and ask only about low-confidence or high-impact ambiguities.
+3. **Auto intake materials**: If the materials are inside Chaoxing/Learning通, run the companion `chaoxing-materials` workflow before ordinary folder intake: confirm a user-approved output folder outside the repo, reuse browser login, open the target course/chapter, download accessible chapter PDFs by default, verify the files, and create `manifest/materials-manifest.md/json`. Download source files, video, or audio only when the student opts in or the PDF is insufficient. If a manifest exists, seed `logs/source_coverage.md` from it before scanning the folder: `01_pdf_for_ai/` becomes the default courseware reading set, `02_source_files/` is optional original evidence, and `03_video_audio/` is optional recording evidence. Then classify any remaining loose files into PPT/PDF, textbook/reference, recordings/transcripts, homework, review重点, past exams, charts/tables/figures, and other. Assign priority tier S0-S6 and ask only about low-confidence or high-impact ambiguities.
 4. **Build source coverage ledger**: Create `logs/source_coverage.md` before synthesis. Mark every source complete, partial, unreadable, or skipped. Stop on unread S0/S1/S2 sources unless the user explicitly accepts lower confidence.
 5. **Collect and lock exam info**: Ask only for missing high-impact details: course name, exam scope, question types/marks, duration, open/closed book, target score, available time, and whether Hermes-style timed reminders/message check-ins should be used. Save current rules to `logs/exam_rules.md`.
 6. **Build evidence index and priority map**: Scan all readable files, list usable and unreadable sources, note weak OCR/transcript quality, create `logs/evidence.md`, and create `logs/source_priority.md`. Extract teacher review-recording priorities before using past papers.
@@ -601,6 +604,12 @@ Prefer this structure:
 
 ```text
 course-folder/
+  # Optional input produced by chaoxing-materials, usually outside the repo:
+  # chaoxing-materials/
+  #   01_pdf_for_ai/
+  #   02_source_files/
+  #   03_video_audio/
+  #   manifest/
   00_inbox/
     ppt/
     textbook/
